@@ -62,7 +62,35 @@ const createBlog = async (req, res) => {
   }
 };
 
+const findPostByid = async (req, res) => {
+  const {id} = req.params;
+
+  try {
+    const blog = await prisma.blogs.findUnique({
+      where: {
+        id: id,
+      } , select : {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    res.status(200).send({
+      success: true,
+      data: blog,
+      message: `Blog with id ${id} retrieved successfully`,
+    });
+  }catch(err){
+    res.status(500).json({
+      message : err.message
+    })
+  }
+}
+
 module.exports = {
   findBlogs,
-  createBlog
+  createBlog,
+  findPostByid
 };
