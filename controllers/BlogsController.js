@@ -31,6 +31,7 @@ const findBlogs = async (req, res) => {
 }
 
 const createBlog = async (req, res) => {
+  const {title, content} = req.body;
   const errors = validationResult(req);
   if(!errors.isEmpty()){
     return res.status(422).json({
@@ -43,8 +44,8 @@ const createBlog = async (req, res) => {
   try {
     const blog = await prisma.blogs.create({
       data: {
-        title: req.body.title,
-        content: req.body.content,
+        title: title,
+        content: content,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -89,8 +90,63 @@ const findPostByid = async (req, res) => {
   }
 }
 
+const updateBlog = async (req , res) => {
+  const {id} = req.params;
+  const {title, content} = req.body;
+  const error = validationResult(req);
+  if(!error.isEmpty()){
+    return res.status(422).json({
+      success: false,
+      message: "validation error",
+      errors : error.array()
+    })
+  }
+  try {
+    const blog = await prisma.blogs.update({
+      where: {
+        id: id,
+      },
+      data: {
+        title: title,
+        content: content,
+        updatedAt: new Date(),
+      },
+    });
+    res.status(200).send({
+      success: true,
+      data: blog,
+      message: `Blog with id ${id} updated successfully`,
+    });
+  }catch(err){
+    res.status(500).json({
+      message : err.message
+    })
+  }
+}
+
+const deleteBlog = async (req, res ) => {
+  const {id} = req.params;
+  try {
+    const blog = await prisma.blogs.delete({
+      where: {
+        id: id,
+      },
+    });
+    res.status(200).send({
+      success: true,
+      message: `Blog with id ${id} deleted successfully`,
+    });
+}catch(err){
+  res.status(500).json({
+    success: false,
+    message : err.message
+  })
+}
+}
 module.exports = {
   findBlogs,
   createBlog,
-  findPostByid
+  findPostByid,
+  updateBlog,
+  deleteBlog
 };
